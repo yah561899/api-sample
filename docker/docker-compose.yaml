@@ -1,0 +1,41 @@
+version: '3.8'
+
+services:
+  # sampleapi:
+  #   container_name: sampleapi
+  #   build:
+  #     context: .
+  #     dockerfile: dockerfile
+  #   image: sampleapi:latest
+  #   ports:
+  #     - 8081:8082
+  #   environment:
+  #     - ASPNETCORE_ENVIRONMENT=Development
+  #   depends_on:
+  #     - redis
+  #     - rabbitmq
+  #   networks:
+  #     - backend
+
+  redis:
+    container_name: redis-local
+    image: redis:latest
+    ports:
+      - 6379:6379
+    networks:
+      - backend
+  
+  rabbitmq:
+    container_name: rabbitmq-local
+    image: rabbitmq:management
+    ports:
+      - 15672:15672
+      - 5672:5672
+    expose:
+      - 15672
+    networks:
+      - backend
+
+networks:
+  backend:
+    driver: bridge
