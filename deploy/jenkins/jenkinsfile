@@ -1,0 +1,12 @@
+pipeline {
+  agent any
+  stages {
+    stage('Where am I?') {
+      steps {
+        sh 'echo "I am in: $(pwd)"'
+        sh 'hostname'
+        sh 'kubectl get pods -n jenkins'
+      }
+    }
+  }
+}
