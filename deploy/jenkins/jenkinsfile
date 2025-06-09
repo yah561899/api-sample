@@ -98,7 +98,7 @@ PATCH_RESPONSE=$(curl -k -s -X PATCH https://${ARGOCD_SERVER}/api/v1/application
   -H "Authorization: Bearer $TOKEN" \
   -H 'Content-Type: application/json' \
   -d '{
-        "patch": "{\"spec\":{\"source\":{\"helm\":{\"parameters\":[{\"name\":\"image.tag\",\"value\":\"1.0.11-main\"}]}}}}",
+        "patch": "{\\"spec\\":{\\"source\\":{\\"helm\\":{\\"parameters\\":[{\\"name\\":\\"image.tag\\",\\"value\\":\\"1.0.11-main\\"}]}}}}",
         "patchType": "merge"
       }')
 echo "Patch Response: $PATCH_RESPONSE"
