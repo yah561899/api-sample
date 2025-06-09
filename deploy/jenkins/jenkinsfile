@@ -78,35 +78,41 @@ pipeline {
       }
     }
 
-    stage('Notify Argo CD via API') {
-      steps {
-        container('api-client'){
-          withCredentials([usernamePassword(credentialsId: 'argocd-credentials-id', usernameVariable: 'ARGO_USER', passwordVariable: 'ARGO_PASS')]) {
-            sh '''
-# Authenticate and obtain token
-RESPONSE=$(curl -k -s -X POST https://${ARGOCD_SERVER}/api/v1/session \
-  -H 'Content-Type: application/json' \
-  -d '{"username":"'"$ARGO_USER"'","password":"'"$ARGO_PASS"'"}')
-# Print raw response
-echo "ArgoCD Auth Response: $RESPONSE"
-# Extract token
-TOKEN=$(echo "$RESPONSE" | sed -E 's/.*"token":"([^"]+)".*/\\1/')
-echo "Extracted Token: $TOKEN"
+stage('Notify Argo CD via API') {
+  steps {
+    container('api-client') {
+      withCredentials([usernamePassword(
+        credentialsId: 'argocd-credentials-id',
+        usernameVariable: 'ARGO_USER',
+        passwordVariable: 'ARGO_PASS'
+      )]) {
+        sh """
+# 1. 拿 token
+RESPONSE=\$(curl -k -s -X POST https://${ARGOCD_SERVER}/api/v1/session \\
+  -H "Content-Type: application/json" \\
+  -d '{\"username\":\"${ARGO_USER}\",\"password\":\"${ARGO_PASS}\"}')
+TOKEN=\$(echo "\$RESPONSE" | sed -E 's/.*"token":"([^"]+)".*/\\1/')
 
-# Patch Argo CD Helm Application to update image tag via Helm parameter
-PATCH_RESPONSE=$(curl -k -s -X PATCH https://${ARGOCD_SERVER}/api/v1/applications/${ARGOCD_APP} \
-  -H "Authorization: Bearer $TOKEN" \
-  -H 'Content-Type: application/json' \
+# 2. 直接用 merge-patch 更新，VERSION 会在这里被替换
+curl -k -s -X PATCH "https://${ARGOCD_SERVER}/api/v1/applications/${ARGOCD_APP}?patchType=merge" \\
+  -H "Authorization: Bearer \$TOKEN" \\
+  -H "Content-Type: application/merge-patch+json" \\
   -d '{
-        "patch": "{\\"spec\\":{\\"source\\":{\\"helm\\":{\\"parameters\\":[{\\"name\\":\\"image.tag\\",\\"value\\":\\"${VERSION}\\"}]}}}}",
-        "patchType": "merge"
-      }')
-echo "Patch Response: $PATCH_RESPONSE"
-            '''
+        "spec": {
+          "source": {
+            "helm": {
+              "parameters": [
+                { "name": "image.tag", "value": "${VERSION}" }
+              ]
+            }
           }
         }
+      }'
+"""
       }
     }
+  }
+}
   }
 
   post {
