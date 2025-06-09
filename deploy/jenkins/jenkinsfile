@@ -49,30 +49,32 @@ pipeline {
       }
     }
 
-    stage('Build & Push Docker Image') {
-      steps {
-        container('ci') {       // ← 切到 ci 容器
-          sh "docker build -t ${IMAGE_NAME}:${VERSION} -f ${DOCKERFILE_PATH} ."
+    // stage('Build & Push Docker Image') {
+    //   steps {
+    //     container('ci') {       // ← 切到 ci 容器
+    //       sh "docker build -t ${IMAGE_NAME}:${VERSION} -f ${DOCKERFILE_PATH} ."
 
-          withCredentials([
-            usernamePassword(
-              credentialsId: 'dockerhub-credentials-id',
-              usernameVariable: 'DOCKER_USER',
-              passwordVariable: 'DOCKER_PASS'
-            )
-          ]) {
-            sh "echo $DOCKER_PASS | docker login ${REGISTRY} -u $DOCKER_USER --password-stdin"
-          }
+    //       withCredentials([
+    //         usernamePassword(
+    //           credentialsId: 'dockerhub-credentials-id',
+    //           usernameVariable: 'DOCKER_USER',
+    //           passwordVariable: 'DOCKER_PASS'
+    //         )
+    //       ]) {
+    //         sh "echo $DOCKER_PASS | docker login ${REGISTRY} -u $DOCKER_USER --password-stdin"
+    //       }
 
-          sh "docker push ${IMAGE_NAME}:${VERSION}"
-        }
-      }
-    }
+    //       sh "docker push ${IMAGE_NAME}:${VERSION}"
+    //     }
+    //   }
+    // }
 
     stage('Notify Argo CD via API') {
       steps {
           withCredentials([usernamePassword(credentialsId: 'argocd-credentials-id', usernameVariable: 'ARGO_USER', passwordVariable: 'ARGO_PASS')]) {
             sh '''
+                apk update
+                apk add curl
 # Authenticate and obtain token
 RESPONSE=$(curl -k -s -X POST https://${ARGOCD_SERVER}/api/v1/session \
   -H 'Content-Type: application/json' \
