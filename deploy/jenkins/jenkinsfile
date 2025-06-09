@@ -1,83 +1,100 @@
 pipeline {
-    agent {
-      kubernetes {
-        """
-    apiVersion: v1
-    kind: Pod
-    spec:
-      serviceAccountName: jenkins
-      containers:
-        - name: ci
-          image: docker:dind
-          securityContext:
-            privileged: true
-          tty: true
-          resources:
-            requests:
-              cpu: 1000m
-              memory: 2Gi
-            limits:
-              cpu: 1000m
-              memory: 2Gi
-    """
+  agent {
+    kubernetes {
+      yaml """
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    app: jenkins-dind
+spec:
+  serviceAccountName: jenkins
+  volumes:
+    - name: dockersock
+      emptyDir: {}
+  containers:
+    - name: ci
+      image: docker:20.10.24-dind
+      securityContext:
+        privileged: true
+      tty: true
+      volumeMounts:
+        - name: dockersock
+          mountPath: /var/run/docker.sock
+      resources:
+        requests:
+          cpu: 1000m
+          memory: 2Gi
+        limits:
+          cpu: 1000m
+          memory: 2Gi
+"""
+    }
+  }
+
+  environment {
+    REGISTRY         = "docker.io"
+    IMAGE_NAME       = "yah561899/sampleapi"
+    TAG              = "latest"
+    DOCKERFILE_PATH  = "deploy/docker/Dockerfile"
+
+    ARGOCD_SERVER    = "argocd.example.com"
+    ARGOCD_APP       = "argocd/sampleapi-app"
+  }
+
+  stages {
+    stage('Checkout') {
+      steps {
+        checkout scm
       }
     }
-    environment {
-        // Docker Hub registry and image settings
-        REGISTRY = "docker.io"
-        IMAGE_NAME = "yah561899/sampleapi"
-        // TAG = "${env.BUILD_NUMBER}"
-        TAG = "latest"
-        PATH = "deploy/docker/dockerfile"
 
-        // Argo CD settings
-        ARGOCD_SERVER = "argocd.example.com"
-        ARGOCD_APP    = "argocd/sampleapi-app"
-    }
-    stages {
-        stage('Checkout') {
-            steps {
-                // Checkout source code
-                checkout scm
-            }
-        }
+    stage('Build & Push Docker Image') {
+      steps {
+        container('ci') {       // ← 切到 ci 容器
+          sh "docker build -t ${IMAGE_NAME}:${TAG} -f ${DOCKERFILE_PATH} ."
 
-        stage('Build & Push Docker Image') {
-            steps {
-                script {
-                      // 构建 Docker 镜像
-                    sh "docker build -t ${IMAGE_NAME}:${TAG} -f ${PATH} ."
-                    // 登录 Docker Hub（使用纯 sh 替代 docker.withRegistry）
-                    withCredentials([usernamePassword(credentialsId: 'dockerhub-credentials-id', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
-                        sh "echo $DOCKER_PASS | docker login ${REGISTRY} -u $DOCKER_USER --password-stdin"
-                    }
-                    // 推送镜像
-                    sh "docker push ${IMAGE_NAME}:${TAG}"
-                }
-            }
-        }
+          withCredentials([
+            usernamePassword(
+              credentialsId: 'dockerhub-credentials-id',
+              usernameVariable: 'DOCKER_USER',
+              passwordVariable: 'DOCKER_PASS'
+            )
+          ]) {
+            sh "echo $DOCKER_PASS | docker login ${REGISTRY} -u $DOCKER_USER --password-stdin"
+          }
 
-        stage('Notify Argo CD') {
-            steps {
-                // 使用 argocd CLI，同步 Argo 应用，需在 Jenkins 中创建 argocd-credentials-id 凭据
-                withCredentials([usernamePassword(credentialsId: 'argocd-credentials-id', usernameVariable: 'ARGO_USER', passwordVariable: 'ARGO_PASS')]) {
-                    sh '''
-                        argocd login ${ARGOCD_SERVER} \
-                          --username ${ARGO_USER} \
-                          --password ${ARGO_PASS} \
-                          --insecure
-                        argocd app sync ${ARGOCD_APP}
-                    '''
-                }
-            }
+          sh "docker push ${IMAGE_NAME}:${TAG}"
         }
+      }
     }
-    post {
-        success {
-            echo "✅ Build & push 成功，已触发 Argo CD 同步"
+
+    stage('Notify Argo CD') {
+      steps {
+        // 这一步不需要用到 ci 容器，直接在 jnlp 上跑也行
+        withCredentials([
+          usernamePassword(
+            credentialsId: 'argocd-credentials-id',
+            usernameVariable: 'ARGO_USER',
+            passwordVariable: 'ARGO_PASS'
+          )
+        ]) {
+          sh '''
+            argocd login ${ARGOCD_SERVER} \
+              --username ${ARGO_USER} \
+              --password ${ARGO_PASS} \
+              --insecure \
+              --grpc-web
+
+            argocd app sync ${ARGOCD_APP}
+          '''
         }
-        failure {
-            echo "❌ Pipeline 失败，请查看日志。"
-        }
+      }
     }
+  }
+
+  post {
+    success { echo "✅ Build & push 成功，已触发 Argo CD 同步" }
+    failure { echo "❌ Pipeline 失败，请查看日志。" }
+  }
 }
