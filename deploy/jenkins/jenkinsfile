@@ -1,3 +1,9 @@
+def getCustomVersion(String versionPrefix) {
+  def res = "${versionPrefix}.${env.BUILD_NUMBER}-${env.BRANCH_NAME}"
+  res = res.replace('/', '-')
+  return res
+}
+
 pipeline {
   agent {
     kubernetes {
@@ -26,7 +32,8 @@ pipeline {
   environment {
     REGISTRY         = "docker.io"
     IMAGE_NAME       = "yah561899/sampleapi"
-    TAG              = "latest"
+    VERSION_PREFIX   = "1.0"
+    VERSION          = getCustomVersion(VERSION_PREFIX)
     DOCKERFILE_PATH  = "deploy/docker/Dockerfile"
 
     // Argo CD Service in Minikube Cluster
@@ -45,7 +52,7 @@ pipeline {
     stage('Build & Push Docker Image') {
       steps {
         container('ci') {       // ← 切到 ci 容器
-          sh "docker build -t ${IMAGE_NAME}:${TAG} -f ${DOCKERFILE_PATH} ."
+          sh "docker build -t ${IMAGE_NAME}:${VERSION} -f ${DOCKERFILE_PATH} ."
 
           withCredentials([
             usernamePassword(
@@ -57,7 +64,7 @@ pipeline {
             sh "echo $DOCKER_PASS | docker login ${REGISTRY} -u $DOCKER_USER --password-stdin"
           }
 
-          sh "docker push ${IMAGE_NAME}:${TAG}"
+          sh "docker push ${IMAGE_NAME}:${VERSION}"
         }
       }
     }
@@ -66,12 +73,18 @@ pipeline {
       steps {
           withCredentials([usernamePassword(credentialsId: 'argocd-credentials-id', usernameVariable: 'ARGO_USER', passwordVariable: 'ARGO_PASS')]) {
             sh '''
-# In-cluster API call to Argo CD
-# Authenticate and obtain token (skip TLS verify)
+# Authenticate and obtain token
 RESPONSE=$(curl -k -s -X POST https://${ARGOCD_SERVER}/api/v1/session \
   -H 'Content-Type: application/json' \
   -d '{"username":"'"$ARGO_USER"'","password":"'"$ARGO_PASS"'"}')
-TOKEN=$(echo "$RESPONSE" | sed -E 's/.*"token":"([^"]+)".*/\1/')
+TOKEN=$(echo "$RESPONSE" | sed -E 's/.*"token":"([^\"]+)".*/\1/')
+
+# Patch Argo CD Helm Application to update image tag via Helm parameter
+curl -k -s -X PATCH https://${ARGOCD_SERVER}/api/v1/applications/${ARGOCD_APP} \
+  -H "Authorization: Bearer $TOKEN" \
+  -H 'Content-Type: application/merge-patch+json' \
+  -d '{"spec":{"source":{"helm":{"parameters":[{"name":"image.tag","value":"'${TAG}'"}]}}}}'
+
 # Trigger sync for the Argo CD application
 curl -k -s -X POST https://${ARGOCD_SERVER}/api/v1/applications/${ARGOCD_APP}/sync \
   -H "Authorization: Bearer $TOKEN"
