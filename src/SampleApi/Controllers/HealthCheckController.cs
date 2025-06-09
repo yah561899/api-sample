@@ -20,5 +20,12 @@ namespace SampleApi.Controllers
             _logger.LogInformation("heathy status");
             return Ok("Ok");
         }
+
+        [HttpGet("readinessV2")]
+        public IActionResult HealthCheckV2()
+        {
+            _logger.LogInformation("heathy status v2");
+            return Ok("Ok");
+        }
     }
 }
