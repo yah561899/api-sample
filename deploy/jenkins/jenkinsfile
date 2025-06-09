@@ -97,7 +97,10 @@ echo "Extracted Token: $TOKEN"
 PATCH_RESPONSE=$(curl -k -s -X PATCH https://${ARGOCD_SERVER}/api/v1/applications/${ARGOCD_APP} \
   -H "Authorization: Bearer $TOKEN" \
   -H 'Content-Type: application/merge-patch+json' \
-  -d '{"spec":{"source":{"helm":{"parameters":[{"name":"image.tag","value":"'${TAG}'"}]}}}}')
+  -d '{
+        "patch": "{\"spec\":{\"source\":{\"helm\":{\"parameters\":[{\"name\":\"image.tag\",\"value\":\"1.0.11-main\"}]}}}}",
+        "patchType": "merge"
+      }')
 echo "Patch Response: $PATCH_RESPONSE"
 
 # Trigger sync for the Argo CD application
