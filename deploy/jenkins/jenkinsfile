@@ -1,11 +1,60 @@
 pipeline {
-  agent any
-  stages {
-    stage('Where am I?') {
-      steps {
-        sh 'echo "I am in: $(pwd)"'
-        sh 'hostname'
-      }
+    agent any
+    environment {
+        // Docker Hub registry and image settings
+        REGISTRY = "docker.io"
+        IMAGE_NAME = "yah561899/sampleapi"
+        // TAG = "${env.BUILD_NUMBER}"
+        TAG = "latest"
+        PATH = "deploy/docker/dockerfile"
+
+        // Argo CD settings
+        ARGOCD_SERVER = "argocd.example.com"
+        ARGOCD_APP    = "argocd/sampleapi-app"
     }
-  }
+    stages {
+        stage('Checkout') {
+            steps {
+                // Checkout source code
+                checkout scm
+            }
+        }
+
+        stage('Build & Push Docker Image') {
+            steps {
+                script {
+                    // 登录并推送到 Docker Hub，需在 Jenkins 中创建 dockerhub-credentials-id 凭据
+                    docker.withRegistry("https://${REGISTRY}", 'dockerhub-credentials-id') {
+                        sh """
+                            docker build -t "${IMAGE_NAME}:${TAG}" -f "${PATH}" .
+                            docker push "${IMAGE_NAME}:${TAG}"
+                        """
+                    }
+                }
+            }
+        }
+
+        stage('Notify Argo CD') {
+            steps {
+                // 使用 argocd CLI，同步 Argo 应用，需在 Jenkins 中创建 argocd-credentials-id 凭据
+                withCredentials([usernamePassword(credentialsId: 'argocd-credentials-id', usernameVariable: 'ARGO_USER', passwordVariable: 'ARGO_PASS')]) {
+                    sh '''
+                        argocd login ${ARGOCD_SERVER} \
+                          --username ${ARGO_USER} \
+                          --password ${ARGO_PASS} \
+                          --insecure
+                        argocd app sync ${ARGOCD_APP}
+                    '''
+                }
+            }
+        }
+    }
+    post {
+        success {
+            echo "✅ Build & push 成功，已触发 Argo CD 同步"
+        }
+        failure {
+            echo "❌ Pipeline 失败，请查看日志。"
+        }
+    }
 }
