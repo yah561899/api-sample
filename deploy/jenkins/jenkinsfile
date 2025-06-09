@@ -90,23 +90,18 @@ RESPONSE=$(curl -k -s -X POST https://${ARGOCD_SERVER}/api/v1/session \
 # Print raw response
 echo "ArgoCD Auth Response: $RESPONSE"
 # Extract token
-TOKEN=$(echo "$RESPONSE" | sed -E 's/.*"token":"([^\"]+)".*/\1/')
+TOKEN=$(echo "$RESPONSE" | sed -E 's/.*"token":"([^"]+)".*/\\1/')
 echo "Extracted Token: $TOKEN"
 
 # Patch Argo CD Helm Application to update image tag via Helm parameter
 PATCH_RESPONSE=$(curl -k -s -X PATCH https://${ARGOCD_SERVER}/api/v1/applications/${ARGOCD_APP} \
   -H "Authorization: Bearer $TOKEN" \
-  -H 'Content-Type: application/merge-patch+json' \
+  -H 'Content-Type: application/json' \
   -d '{
         "patch": "{\"spec\":{\"source\":{\"helm\":{\"parameters\":[{\"name\":\"image.tag\",\"value\":\"1.0.11-main\"}]}}}}",
         "patchType": "merge"
       }')
 echo "Patch Response: $PATCH_RESPONSE"
-
-# Trigger sync for the Argo CD application
-SYNC_RESPONSE=$(curl -k -s -X POST https://${ARGOCD_SERVER}/api/v1/applications/${ARGOCD_APP}/sync \
-  -H "Authorization: Bearer $TOKEN")
-echo "Sync Response: $SYNC_RESPONSE"
             '''
           }
         }
