@@ -1,5 +1,27 @@
 pipeline {
-    agent any
+    agent {
+      kubernetes {
+        """
+    apiVersion: v1
+    kind: Pod
+    spec:
+      serviceAccountName: jenkins
+      containers:
+        - name: ci
+          image: docker:dind
+          securityContext:
+            privileged: true
+          tty: true
+          resources:
+            requests:
+              cpu: 1000m
+              memory: 2Gi
+            limits:
+              cpu: 1000m
+              memory: 2Gi
+    """
+      }
+    }
     environment {
         // Docker Hub registry and image settings
         REGISTRY = "docker.io"
