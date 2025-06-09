@@ -23,13 +23,14 @@ pipeline {
         stage('Build & Push Docker Image') {
             steps {
                 script {
-                    // 登录并推送到 Docker Hub，需在 Jenkins 中创建 dockerhub-credentials-id 凭据
-                    docker.withRegistry("https://${REGISTRY}", 'dockerhub-credentials-id') {
-                        sh """
-                            docker build -t "${IMAGE_NAME}:${TAG}" -f "${PATH}" .
-                            docker push "${IMAGE_NAME}:${TAG}"
-                        """
+                      // 构建 Docker 镜像
+                    sh "docker build -t ${IMAGE_NAME}:${TAG} -f ${PATH} ."
+                    // 登录 Docker Hub（使用纯 sh 替代 docker.withRegistry）
+                    withCredentials([usernamePassword(credentialsId: 'dockerhub-credentials-id', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+                        sh "echo $DOCKER_PASS | docker login ${REGISTRY} -u $DOCKER_USER --password-stdin"
                     }
+                    // 推送镜像
+                    sh "docker push ${IMAGE_NAME}:${TAG}"
                 }
             }
         }
