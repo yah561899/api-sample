@@ -2,32 +2,23 @@ pipeline {
   agent {
     kubernetes {
       yaml """
-apiVersion: v1
-kind: Pod
-metadata:
-  labels:
-    app: jenkins-dind
-spec:
-  serviceAccountName: jenkins
-  volumes:
-    - name: dockersock
-      emptyDir: {}
-  containers:
-    - name: ci
-      image: docker:20.10.24-dind
-      securityContext:
-        privileged: true
-      tty: true
-      volumeMounts:
-        - name: dockersock
-          mountPath: /var/run/docker.sock
-      resources:
-        requests:
-          cpu: 1000m
-          memory: 2Gi
-        limits:
-          cpu: 1000m
-          memory: 2Gi
+    apiVersion: v1
+    kind: Pod
+    spec:
+      serviceAccountName: jenkins
+      containers:
+        - name: ci
+          image: docker:dind
+          securityContext:
+            privileged: true
+          tty: true
+          resources:
+            requests:
+              cpu: 1000m
+              memory: 2Gi
+            limits:
+              cpu: 1000m
+              memory: 2Gi
 """
     }
   }
