@@ -19,9 +19,6 @@ pipeline {
             limits:
               cpu: 1000m
               memory: 2Gi
-        - name: curl
-          image: curlimages/curl:7.85.0
-          tty: true
 """
     }
   }
@@ -67,7 +64,6 @@ pipeline {
 
     stage('Notify Argo CD via API') {
       steps {
-        container('curl') {
           withCredentials([usernamePassword(credentialsId: 'argocd-credentials-id', usernameVariable: 'ARGO_USER', passwordVariable: 'ARGO_PASS')]) {
             sh '''
 # In-cluster API call to Argo CD
@@ -81,7 +77,6 @@ curl -k -s -X POST https://${ARGOCD_SERVER}/api/v1/applications/${ARGOCD_APP}/sy
   -H "Authorization: Bearer $TOKEN"
             '''
           }
-        }
       }
     }
   }
