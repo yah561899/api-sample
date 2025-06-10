@@ -1,5 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using SampleApi.Models.Enums;
+using SampleApi.Utils.Tools;
 
 namespace SampleApi.Controllers
 {
@@ -21,18 +23,17 @@ namespace SampleApi.Controllers
             return Ok("Ok");
         }
 
-        [HttpGet("readinessV2")]
-        public IActionResult HealthCheckV2()
+        [HttpGet("redis/info")]
+        public IActionResult GetRedisInfo()
         {
-            _logger.LogInformation("heathy status v2");
-            return Ok("Ok");
-        }
+            var redisHost = EnvironmentVariableReader<EnumEnvironmentalVariable>.Get(EnumEnvironmentalVariable.RedisHost);
+            var redisPort = EnvironmentVariableReader<EnumEnvironmentalVariable>.Get(EnumEnvironmentalVariable.RedisPort);
+            var res = new
+            {
+                redisHost, redisPort,
+            };
 
-        [HttpGet("readinessV3")]
-        public IActionResult HealthCheckV3()
-        {
-            _logger.LogInformation("heathy status v3");
-            return Ok("Ok");
+            return Ok(res);
         }
     }
 }
