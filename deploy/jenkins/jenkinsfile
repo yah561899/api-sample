@@ -78,38 +78,37 @@ pipeline {
       }
     }
 
-stage('Notify Argo CD via API') {
-  steps {
-    container('api-client'){
-      withCredentials([usernamePassword(
-        credentialsId: 'argocd-credentials-id',
-        usernameVariable: 'ARGO_USER',
-        passwordVariable: 'ARGO_PASS'
-      )]) {
-        sh '''
+    stage('Notify Argo CD via API') {
+      steps {
+        container('api-client') {
+          withCredentials([usernamePassword(
+            credentialsId: 'argocd-credentials-id',
+            usernameVariable: 'ARGO_USER',
+            passwordVariable: 'ARGO_PASS'
+          )]) {
+        sh """
 # Authenticate and obtain token
-RESPONSE=$(curl -k -s -X POST https://${ARGOCD_SERVER}/api/v1/session \
-  -H 'Content-Type: application/json' \
-  -d '{"username":"'"$ARGO_USER"'","password":"'"$ARGO_PASS"'"}')
-echo "ArgoCD Auth Response: $RESPONSE"
-TOKEN=$(echo "$RESPONSE" | sed -E 's/.*"token":"([^"]+)".*/\\1/')
-echo "Extracted Token: $TOKEN"
+RESPONSE=\$(curl -k -s -X POST https://${ARGOCD_SERVER}/api/v1/session \\
+  -H 'Content-Type: application/json' \\
+  -d '{\"username\":\"${ARGO_USER}\",\"password\":\"${ARGO_PASS}\"}')
+echo "ArgoCD Auth Response: \$RESPONSE"
+TOKEN=\$(echo "\$RESPONSE" | sed -E 's/.*\"token\":\"([^\"]+)\".*/\\1/')
+echo "Extracted Token: \$TOKEN"
 
 # Patch Argo CD Helm Application to update image tag via Helm parameter
-PATCH_RESPONSE=$(curl -k -s -X PATCH https://${ARGOCD_SERVER}/api/v1/applications/${ARGOCD_APP} \
-  -H "Authorization: Bearer $TOKEN" \
-  -H 'Content-Type: application/json' \
+PATCH_RESPONSE=\$(curl -k -s -X PATCH https://${ARGOCD_SERVER}/api/v1/applications/${ARGOCD_APP} \\
+  -H "Authorization: Bearer \$TOKEN" \\
+  -H 'Content-Type: application/json' \\
   -d '{
-        "patch": "{\"spec\":{\"source\":{\"helm\":{\"parameters\":[{\"name\":\"image.tag\",\"value\":\"'"${VERSION}"'\"}]}}}}",
+        "patch": "{\\"spec\\":{\\"source\\":{\\"helm\\":{\\"parameters\\":[{\\"name\\":\\"image.tag\\",\\"value\\":\\"${VERSION}\\"}]}}}}",
         "patchType": "merge"
       }')
-echo "Patch Response: $PATCH_RESPONSE"
-'''
+echo "Patch Response: \$PATCH_RESPONSE"
+"""
+          }
+        }
       }
     }
-  }
-}
-
   }
 
   post {
