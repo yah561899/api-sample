@@ -1,7 +1,10 @@
 def getCustomVersion(String versionPrefix) {
-  def res = "${versionPrefix}.${env.BUILD_NUMBER}-${env.BRANCH_NAME}"
-  res = res.replace('/', '-')
-  return res
+  // 取得短版 commit ID（若不存在就用 "none"）
+  def commitId = (env.GIT_COMMIT ?: "none")[0..6]
+  // 把 branch 名裡的 "/" 換成 "-"
+  def branch = env.BRANCH_NAME.replace('/', '-')
+  // 拼出 versionPrefix.BUILD_NUMBER-branch-commitId
+  return "${versionPrefix}.${env.BUILD_NUMBER}-${commitId}-${branch}"
 }
 
 pipeline {

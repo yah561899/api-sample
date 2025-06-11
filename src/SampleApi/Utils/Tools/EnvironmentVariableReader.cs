@@ -35,11 +35,11 @@ namespace SampleApi.Utils.Tools
                 .GetCustomAttributes(typeof(OptionalEnvironmentAttribute), false)
                 .Any() == true;
 
-            var environmentalVariable = GetEnvironmentVariableValue(variableName, isOptional);
+            var environmentVariable = GetEnvironmentVariableValue(variableName, isOptional);
 
-            UpdateEnvironmentVariableCache(variable, environmentalVariable);
+            UpdateEnvironmentVariableCache(variable, environmentVariable);
 
-            return environmentalVariable;
+            return environmentVariable;
         }
 
         private static string GetVariableName(TEnum variable)
@@ -56,9 +56,9 @@ namespace SampleApi.Utils.Tools
 
         private static string? GetEnvironmentVariableValue(string variableName, bool isOptional)
         {
-            string? environmentalVariable = Environment.GetEnvironmentVariable(variableName, EnvironmentVariableTarget.Process);
+            string? environmentVariable = Environment.GetEnvironmentVariable(variableName, EnvironmentVariableTarget.Process);
 
-            if (environmentalVariable == null)
+            if (environmentVariable == null)
             {
                 // environmental value does not exist but it is required.
                 if (!isOptional)
@@ -66,10 +66,10 @@ namespace SampleApi.Utils.Tools
                     throw new Exception($"environmental value '{variableName}' have not been found.");
                 }
 
-                environmentalVariable = null;
+                environmentVariable = null;
             }
 
-            return environmentalVariable;
+            return environmentVariable;
         }
 
         private static bool IsValueCached(TEnum variable, out string? cachedValue)
@@ -87,14 +87,14 @@ namespace SampleApi.Utils.Tools
             return false;
         }
 
-        private static void UpdateEnvironmentVariableCache(TEnum variable, string? environmentalVariable)
+        private static void UpdateEnvironmentVariableCache(TEnum variable, string? environmentVariable)
         {
-            if (environmentalVariable == null)
+            if (environmentVariable == null)
             {
                 return;
             }
 
-            EnvironmentVariablesCache.AddOrUpdate(variable, (environmentalVariable, DateTime.Now), (key, oldValue) => (environmentalVariable, DateTime.Now));
+            EnvironmentVariablesCache.AddOrUpdate(variable, (environmentVariable, DateTime.Now), (key, oldValue) => (environmentVariable, DateTime.Now));
         }
     }
 }

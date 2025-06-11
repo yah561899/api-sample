@@ -26,8 +26,8 @@ namespace SampleApi.Controllers
         [HttpGet("redis/info")]
         public IActionResult GetRedisInfo()
         {
-            var redisHost = EnvironmentVariableReader<EnumEnvironmentalVariable>.Get(EnumEnvironmentalVariable.RedisHost);
-            var redisPort = EnvironmentVariableReader<EnumEnvironmentalVariable>.Get(EnumEnvironmentalVariable.RedisPort);
+            var redisHost = EnvironmentVariableReader<EnumEnvironmentVariable>.Get(EnumEnvironmentVariable.RedisHost);
+            var redisPort = EnvironmentVariableReader<EnumEnvironmentVariable>.Get(EnumEnvironmentVariable.RedisPort);
             var res = new
             {
                 redisHost, redisPort,
