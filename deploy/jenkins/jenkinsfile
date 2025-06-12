@@ -103,10 +103,16 @@ PATCH_RESPONSE=\$(curl -k -s -X PATCH https://${ARGOCD_SERVER}/api/v1/applicatio
   -H "Authorization: Bearer \$TOKEN" \\
   -H 'Content-Type: application/json' \\
   -d '{
-        "patch": "{\\"spec\\":{\\"source\\":{\\"helm\\":{\\"parameters\\":[{\\"name\\":\\"image.tag\\",\\"value\\":\\"${VERSION}\\"}]}}}}",
+        "patch": "{\\"spec\\":{\\"source\\":{\\"helm\\":{\\"parameters\\":[{\\"name\\":\\"global.image.tag\\",\\"value\\":\\"${VERSION}\\"}]}}}}",
         "patchType": "merge"
       }')
 echo "Patch Response: \$PATCH_RESPONSE"
+
+SYNC_RESPONSE=\$(curl -k -s -X POST https://${ARGOCD_SERVER}/api/v1/applications/${ARGOCD_APP}/sync \\
+  -H "Authorization: Bearer \$TOKEN" \\
+  -H 'Content-Type: application/json' \\
+  -d '{}')
+echo "Sync Response: \$SYNC_RESPONSE"
 """
           }
         }
