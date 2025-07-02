@@ -337,39 +337,39 @@ namespace SampleApi.Executor
             }
             _logger.LogInformation($"Url: {node.Mapper.Url}, request payload: {JsonSerializer.Serialize(responseBody)}");
 
-            PushMqToApiGateway(node.Mapper, responseBody.Data);
+            //PushMqToApiGateway(node.Mapper, responseBody.Data);
 
             return responseBody.Data;
         }
 
-        private void PushMqToApiGateway(Mapper mapper, Dictionary<string, object> data)
-        {
-            if (data["stepResultData"] == null)
-                throw new ArgumentNullException(data["stepResultData"].ToString());
+        //private void PushMqToApiGateway(Mapper mapper, Dictionary<string, object> data)
+        //{
+        //    if (data["stepResultData"] == null)
+        //        throw new ArgumentNullException(data["stepResultData"].ToString());
 
-            if (!bool.TryParse(data["stepResult"].ToString(), out bool stepResult))
-                throw new ArgumentNullException(data["stepResult"].ToString());
+        //    if (!bool.TryParse(data["stepResult"].ToString(), out bool stepResult))
+        //        throw new ArgumentNullException(data["stepResult"].ToString());
 
-            var traceId = Guid.Parse(RequestHeaderContext.CurrentTraceId.Value);
-            var userId = RequestHeaderContext.UserId.Value;
+        //    var traceId = Guid.Parse(RequestHeaderContext.CurrentTraceId.Value);
+        //    var userId = RequestHeaderContext.UserId.Value;
 
-            var mqData = new WorkflowMqData<object>()
-            {
-                StageResult = new WorkflowStageResult()
-                {
-                    TraceId = traceId,
-                    UserId = userId,
-                    Data = data["stepResultData"],
-                    StepKey = mapper.Name,
-                    StepResult = stepResult,
-                }
-            };
+        //    var mqData = new WorkflowMqData<object>()
+        //    {
+        //        StageResult = new WorkflowStageResult()
+        //        {
+        //            TraceId = traceId,
+        //            UserId = userId,
+        //            Data = data["stepResultData"],
+        //            StepKey = mapper.Name,
+        //            StepResult = stepResult,
+        //        }
+        //    };
 
-            var pushModel = MqFactory.GetStepResult(traceId, userId, mqData);
+        //    var pushModel = MqFactory.GetStepResult(traceId, userId, mqData);
 
-            using var scope = _serviceScopeFactory.CreateScope();
-            var mqProxy = scope.ServiceProvider.GetRequiredService<MqProxy>();
-            mqProxy.PushToOtherService(pushModel);
-        }
+        //    using var scope = _serviceScopeFactory.CreateScope();
+        //    var mqProxy = scope.ServiceProvider.GetRequiredService<MqProxy>();
+        //    mqProxy.PushToOtherService(pushModel);
+        //}
     }
 }
