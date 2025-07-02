@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using SampleApi.Models.Enums;
-using SampleApi.Utils.Tools;
+using SampleApi.CommonUtils.Models.Enums;
+using SampleApi.CommonUtils.Tools.Env;
 
 namespace SampleApi.Controllers
 {
@@ -26,8 +26,8 @@ namespace SampleApi.Controllers
         [HttpGet("redis/info")]
         public IActionResult GetRedisInfo()
         {
-            var redisHost = EnvironmentVariableReader<EnumEnvironmentVariable>.Get(EnumEnvironmentVariable.RedisHost);
-            var redisPort = EnvironmentVariableReader<EnumEnvironmentVariable>.Get(EnumEnvironmentVariable.RedisPort);
+            var redisHost = EnvironmentVariableReader<EnumCommonEnvironmentVariable>.Get(EnumCommonEnvironmentVariable.RedisHost);
+            var redisPort = EnvironmentVariableReader<EnumCommonEnvironmentVariable>.Get(EnumCommonEnvironmentVariable.RedisPort);
             var res = new
             {
                 redisHost, redisPort,

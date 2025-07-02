@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Workflow Visualization</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+        }
+        .workflow {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 20px;
+        }
+        .block {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            border: 2px solid;
+            border-radius: 10px;
+            padding: 10px;
+            width: 100%;
+            max-width: 400px;
+            background-color: #ffffff;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+        .block.success {
+            border-color: #4caf50;
+            background-color: #e8f5e9;
+        }
+        .block.failure {
+            border-color: #f44336;
+            background-color: #fdecea;
+        }
+        .block .block-id {
+            font-size: 14px;
+            color: #555;
+            margin-bottom: 10px;
+        }
+        .block .block-module {
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 5px;
+        }
+        .block .block-name {
+            font-size: 14px;
+            color: #666;
+        }
+        .api-button {
+            margin: 20px 0;
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        .api-button:hover {
+            background-color: #0056b3;
+        }
+        .api-input {
+            margin: 20px 0;
+            width: 100%;
+            max-width: 400px;
+        }
+        .api-input textarea, .api-input input {
+            width: 100%;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            padding: 10px;
+            font-size: 14px;
+            font-family: Arial, sans-serif;
+        }
+        .api-input textarea {
+            height: 150px;
+            resize: none;
+        }
+    </style>
+</head>
+<body>
+    <h1>Workflow Visualization</h1>
+
+    <div class="api-input">
+        <label for="api-token">API Token:</label>
+        <input id="api-token" type="text" placeholder="Enter your API token">
+    </div>
+
+    <div class="api-input">
+        <label for="api-json">API JSON Body:</label>
+        <textarea id="api-json"></textarea>
+    </div>
+
+    <button class="api-button" onclick="executeWorkflow()">Execute Workflow</button>
+    <button class="api-button" onclick="resetBlocks()">Reset</button>
+
+    <div class="workflow">
+        <div class="block" id="43e98133-459b-47f7-bddc-2d60abce2499">
+            <div class="block-id">ID: 43e98133-459b-47f7-bddc-2d60abce2499</div>
+            <div class="block-module">Module: ORBIT_API</div>
+            <div class="block-name">Name: CONFIRM_ORDERS</div>
+        </div>
+        <div class="block" id="666671fc-a4d6-4efb-9727-24e3b41ccc15">
+            <div class="block-id">ID: 666671fc-a4d6-4efb-9727-24e3b41ccc15</div>
+            <div class="block-module">Module: SET_VARIABLES</div>
+            <div class="block-name">Name: N/A</div>
+        </div>
+        <div class="block" id="082aef86-20a1-4191-8d96-c158b6f27a2e">
+            <div class="block-id">ID: 082aef86-20a1-4191-8d96-c158b6f27a2e</div>
+            <div class="block-module">Module: ORBIT_API</div>
+            <div class="block-name">Name: CREATE_DELIVERY_NOTICES</div>
+        </div>
+        <div class="block" id="7a4a93e2-7054-47b5-93f2-2c2aa55801c7">
+            <div class="block-id">ID: 7a4a93e2-7054-47b5-93f2-2c2aa55801c7</div>
+            <div class="block-module">Module: ROUTER</div>
+            <div class="block-name">Name: N/A</div>
+        </div>
+        <div class="block" id="93dfe4e6-6d85-4b64-bc1d-f5cba3082569">
+            <div class="block-id">ID: 93dfe4e6-6d85-4b64-bc1d-f5cba3082569</div>
+            <div class="block-module">Module: SET_VARIABLES</div>
+            <div class="block-name">Name: N/A</div>
+        </div>
+        <div class="block" id="dd7ab087-81b1-47d1-ab54-a92447723df7">
+            <div class="block-id">ID: dd7ab087-81b1-47d1-ab54-a92447723df7</div>
+            <div class="block-module">Module: ORBIT_API</div>
+            <div class="block-name">Name: UPDATE_ORDERS</div>
+        </div>
+        <div class="block" id="8b8c14c0-21f0-4e72-a616-2e38c8e2f7aa">
+            <div class="block-id">ID: 8b8c14c0-21f0-4e72-a616-2e38c8e2f7aa</div>
+            <div class="block-module">Module: SET_VARIABLES</div>
+            <div class="block-name">Name: N/A</div>
+        </div>
+        <div class="block" id="f1260509-63a8-40f7-83b9-5a575846a835">
+            <div class="block-id">ID: f1260509-63a8-40f7-83b9-5a575846a835</div>
+            <div class="block-module">Module: ORBIT_API</div>
+            <div class="block-name">Name: CREATE_POD</div>
+        </div>
+        <div class="block" id="32196241-8f33-4e2d-82de-719b768c76ce">
+            <div class="block-id">ID: 32196241-8f33-4e2d-82de-719b768c76ce</div>
+            <div class="block-module">Module: ROUTER</div>
+            <div class="block-name">Name: N/A</div>
+        </div>
+        <div class="block" id="9475f96f-ddcf-41d2-89e5-e4fe26dfba6c">
+            <div class="block-id">ID: 9475f96f-ddcf-41d2-89e5-e4fe26dfba6c</div>
+            <div class="block-module">Module: SET_VARIABLES</div>
+            <div class="block-name">Name: N/A</div>
+        </div>
+        <div class="block" id="aa48ae74-741a-4735-8a6f-99be0a22bd5d">
+            <div class="block-id">ID: aa48ae74-741a-4735-8a6f-99be0a22bd5d</div>
+            <div class="block-module">Module: ORBIT_API</div>
+            <div class="block-name">Name: UPDATE_ORDERS</div>
+        </div>
+        <div class="block" id="080678c7-4b89-4086-8964-047b676df15e">
+            <div class="block-id">ID: 080678c7-4b89-4086-8964-047b676df15e</div>
+            <div class="block-module">Module: SET_VARIABLES</div>
+            <div class="block-name">Name: N/A</div>
+        </div>
+        <div class="block" id="aab1ba5d-0ff6-4a46-ac77-2f958cd78754">
+            <div class="block-id">ID: aab1ba5d-0ff6-4a46-ac77-2f958cd78754</div>
+            <div class="block-module">Module: ORBIT_API</div>
+            <div class="block-name">Name: UPDATE_ORDERS</div>
+        </div>
+        <div class="block" id="fb929a97-acfe-411a-a98d-2cdc966d1cb0">
+            <div class="block-id">ID: fb929a97-acfe-411a-a98d-2cdc966d1cb0</div>
+            <div class="block-module">Module: SET_VARIABLES</div>
+            <div class="block-name">Name: N/A</div>
+        </div>
+        <div class="block" id="b5a343c1-01d1-4afc-9518-73ea8397bf76">
+            <div class="block-id">ID: b5a343c1-01d1-4afc-9518-73ea8397bf76</div>
+            <div class="block-module">Module: ORBIT_API</div>
+            <div class="block-name">Name: UPDATE_ORDERS</div>
+        </div>
+    </div>
+
+    <script>
+        async function executeWorkflow() {
+            const apiUrl = "http://127.0.0.1:8085/workflow-engine/api/workflow/4f73d66c-e716-4f54-9ff8-d9a28a6e4220/execute";
+            const token = document.getElementById("api-token").value;
+            const requestBody = JSON.parse(document.getElementById("api-json").value);
+
+            try {
+                const response = await fetch(apiUrl, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${token}`
+                    },
+                    body: JSON.stringify(requestBody)
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+
+                const result = await response.json();
+                console.log("Workflow executed successfully:", result);
+                highlightBlocks(result);
+            } catch (error) {
+                console.error("Error executing workflow:", error);
+                alert("Error executing workflow. Check console for details.");
+            }
+        }
+
+        function highlightBlocks(apiResponse) {
+            // Reset block colors
+            document.querySelectorAll(".block").forEach(block => {
+                block.classList.remove("success", "failure");
+            });
+            var data = apiResponse.data
+
+            // Update colors based on the API response
+            document.querySelectorAll(".block").forEach(block => {
+                const step = data.find(step => step.id === block.id);
+                if (step) {
+                    if (step.isSuccess) {
+                        block.classList.add("success");
+                    } else {
+                        block.classList.add("failure");
+                    }
+                } else {
+                    block.classList.add("failure");
+                }
+            });
+        }
+
+        function resetBlocks() {
+            document.querySelectorAll(".block").forEach(block => {
+                block.classList.remove("success", "failure");
+                block.style.backgroundColor = ""; // 恢復原始樣式
+                block.style.borderColor = ""; // 恢復原始樣式
+            });
+        }        
+    </script>
+</body>
+</html>

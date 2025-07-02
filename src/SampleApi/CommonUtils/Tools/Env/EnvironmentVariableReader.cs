@@ -1,8 +1,8 @@
-﻿using SampleApi.Utils.Attributes;
+﻿using SampleApi.CommonUtils.Attributes;
 using System.Collections.Concurrent;
 using System.ComponentModel.DataAnnotations;
 
-namespace SampleApi.Utils.Tools
+namespace SampleApi.CommonUtils.Tools.Env
 {
     public static class EnvironmentVariableReader<TEnum>
         where TEnum : Enum

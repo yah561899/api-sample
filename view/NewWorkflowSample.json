@@ -1,0 +1,355 @@
+{
+  "workflowType": "CONFIRM_ORDER",
+  "organizationId": "3f2d2e17-5360-4198-8dbb-06405cba0023",
+  "orderType": "S",
+  "id": "4f73d66c-e716-4f54-9ff8-d9a28a6e4220",
+  "flow": [
+    {
+      "id": "43e98133-459b-47f7-bddc-2d60abce2499",
+      "filter": null,
+      "module": "ORBIT_API",
+      "mapper": {
+        "name": "CONFIRM_ORDERS",
+        "url": "http://localhost:5091/api/WorkFlowClient/test/confirmOrder",
+        "method": "POST"
+      }
+    },
+    {
+      "id": "666671fc-a4d6-4efb-9727-24e3b41ccc15",
+      "filter": {
+        "conditions": [
+          [
+            {
+              "field": "success",
+              "operator": "ARRAY_LENGTH_GREATER_THAN",
+              "value": "0"
+            }
+          ]
+        ]
+      },
+      "module": "SET_VARIABLES",
+      "mapper": {
+        "variables": [
+          {
+            "name": "compositeIds",
+            "value": "success"
+          }
+        ]
+      }
+    },
+    {
+      "id": "082aef86-20a1-4191-8d96-c158b6f27a2e",
+      "filter": {
+        "conditions": [
+          [
+            {
+              "field": "compositeIds",
+              "operator": "ARRAY_LENGTH_GREATER_THAN",
+              "value": "0"
+            }
+          ]
+        ]
+      },
+      "module": "ORBIT_API",
+      "mapper": {
+        "name": "CREATE_DELIVERY_NOTICES",
+        "url": "http://localhost:5091/api/WorkFlowClient/test/createDn",
+        "method": "POST"
+      }
+    },
+    {
+      "id": "7a4a93e2-7054-47b5-93f2-2c2aa55801c7",
+      "filter": null,
+      "module": "ROUTER",
+      "mapper": null,
+      "routes": [
+        {
+          "flow": [
+            {
+              "id": "93dfe4e6-6d85-4b64-bc1d-f5cba3082569",
+              "filter": {
+                "conditions": [
+                  [
+                    {
+                      "field": "success",
+                      "operator": "ARRAY_LENGTH_GREATER_THAN",
+                      "value": "0"
+                    }
+                  ]
+                ]
+              },
+              "module": "SET_VARIABLES",
+              "mapper": {
+                "variables": [
+                  {
+                    "name": "compositeIds",
+                    "value": "success"
+                  },
+                  {
+                    "name": "data.dnStatus",
+                    "value": "500"
+                  }
+                ]
+              }
+            },
+            {
+              "id": "dd7ab087-81b1-47d1-ab54-a92447723df7",
+              "filter": {
+                "conditions": [
+                  [
+                    {
+                      "field": "compositeIds",
+                      "operator": "ARRAY_LENGTH_GREATER_THAN",
+                      "value": "0"
+                    },
+                    {
+                      "field": "data.dnStatus",
+                      "operator": "EQUAL_TO",
+                      "value": "500"
+                    }
+                  ]
+                ]
+              },
+              "module": "ORBIT_API",
+              "mapper": {
+                "name": "UPDATE_ORDERS",
+                "url": "http://localhost:5091/api/WorkFlowClient/test/updateStatus",
+                "method": "POST"
+              }
+            },
+            {
+              "id": "8b8c14c0-21f0-4e72-a616-2e38c8e2f7aa",
+              "filter": {
+                "conditions": [
+                  [
+                    {
+                      "field": "success",
+                      "operator": "ARRAY_LENGTH_GREATER_THAN",
+                      "value": "0"
+                    }
+                  ]
+                ]
+              },
+              "module": "SET_VARIABLES",
+              "mapper": {
+                "variables": [
+                  {
+                    "name": "compositeIds",
+                    "value": "success"
+                  }
+                ]
+              }
+            },
+            {
+              "id": "f1260509-63a8-40f7-83b9-5a575846a835",
+              "filter": {
+                "conditions": [
+                  [
+                    {
+                      "field": "compositeIds",
+                      "operator": "ARRAY_LENGTH_GREATER_THAN",
+                      "value": "0"
+                    }
+                  ]
+                ]
+              },
+              "module": "ORBIT_API",
+              "mapper": {
+                "name": "CREATE_POD",
+                "url": "http://localhost:5091/api/WorkFlowClient/test/createPod",
+                "method": "POST"
+              }
+            },
+            {
+              "id": "32196241-8f33-4e2d-82de-719b768c76ce",
+              "filter": null,
+              "module": "ROUTER",
+              "mapper": null,
+              "routes": [
+                {
+                  "flow": [
+                    {
+                      "id": "9475f96f-ddcf-41d2-89e5-e4fe26dfba6c",
+                      "filter": {
+                        "conditions": [
+                          [
+                            {
+                              "field": "success",
+                              "operator": "ARRAY_LENGTH_GREATER_THAN",
+                              "value": "0"
+                            }
+                          ]
+                        ]
+                      },
+                      "module": "SET_VARIABLES",
+                      "mapper": {
+                        "variables": [
+                          {
+                            "name": "compositeIds",
+                            "value": "success"
+                          },
+                          {
+                            "name": "data.podStatus",
+                            "value": "500"
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      "id": "aa48ae74-741a-4735-8a6f-99be0a22bd5d",
+                      "filter": {
+                        "conditions": [
+                          [
+                            {
+                              "field": "compositeIds",
+                              "operator": "ARRAY_LENGTH_GREATER_THAN",
+                              "value": "0"
+                            },
+                            {
+                              "field": "data.podStatus",
+                              "operator": "EQUAL_TO",
+                              "value": "500"
+                            }
+                          ]
+                        ]
+                      },
+                      "module": "ORBIT_API",
+                      "mapper": {
+                        "name": "UPDATE_ORDERS",
+                        "url": "http://localhost:5091/api/WorkFlowClient/test/updateStatus",
+                        "method": "POST"
+                      }
+                    }
+                  ]
+                },
+                {
+                  "flow": [
+                    {
+                      "id": "080678c7-4b89-4086-8964-047b676df15e",
+                      "filter": {
+                        "conditions": [
+                          [
+                            {
+                              "field": "failure",
+                              "operator": "ARRAY_LENGTH_GREATER_THAN",
+                              "value": "0"
+                            }
+                          ]
+                        ]
+                      },
+                      "module": "SET_VARIABLES",
+                      "mapper": {
+                        "variables": [
+                          {
+                            "name": "compositeIds",
+                            "value": "failure"
+                          },
+                          {
+                            "name": "data.podStatus",
+                            "value": "900"
+                          },
+                          {
+                            "name": "data.test",
+                            "value": "500"
+                          }
+                        ]
+                      }
+                    },
+                    {
+                      "id": "aab1ba5d-0ff6-4a46-ac77-2f958cd78754",
+                      "filter": {
+                        "conditions": [
+                          [
+                            {
+                              "field": "compositeIds",
+                              "operator": "ARRAY_LENGTH_GREATER_THAN",
+                              "value": "0"
+                            },
+                            {
+                              "field": "data.podStatus",
+                              "operator": "EQUAL_TO",
+                              "value": "900"
+                            }
+                          ],
+                          [
+                            {
+                              "field": "data.test",
+                              "operator": "NOT_EQUAL_TO",
+                              "value": "900"
+                            }
+                          ]
+                        ]
+                      },
+                      "module": "ORBIT_API",
+                      "mapper": {
+                        "name": "UPDATE_ORDERS",
+                        "url": "http://localhost:5091/api/WorkFlowClient/test/updateStatus",
+                        "method": "POST"
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "flow": [
+            {
+              "id": "fb929a97-acfe-411a-a98d-2cdc966d1cb0",
+              "filter": {
+                "conditions": [
+                  [
+                    {
+                      "field": "failure",
+                      "operator": "ARRAY_LENGTH_GREATER_THAN",
+                      "value": "0"
+                    }
+                  ]
+                ]
+              },
+              "module": "SET_VARIABLES",
+              "mapper": {
+                "variables": [
+                  {
+                    "name": "compositeIds",
+                    "value": "success"
+                  },
+                  {
+                    "name": "data.dnStatus",
+                    "value": "900"
+                  }
+                ]
+              }
+            },
+            {
+              "id": "b5a343c1-01d1-4afc-9518-73ea8397bf76",
+              "filter": {
+                "conditions": [
+                  [
+                    {
+                      "field": "compositeIds",
+                      "operator": "ARRAY_LENGTH_GREATER_THAN",
+                      "value": "0"
+                    },
+                    {
+                      "field": "data.dnStatus",
+                      "operator": "EQUAL_TO",
+                      "value": "900"
+                    }
+                  ]
+                ]
+              },
+              "module": "ORBIT_API",
+              "mapper": {
+                "name": "UPDATE_ORDERS",
+                "url": "http://localhost:5091/api/WorkFlowClient/test/updateStatus",
+                "method": "POST"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
