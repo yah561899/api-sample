@@ -5,7 +5,7 @@
         public static AsyncLocal<string> CurrentTraceId { get; } = new AsyncLocal<string>();
 
 
-        public static AsyncLocal<string> AllyTokenKey { get; } = new AsyncLocal<string>();
+        public static AsyncLocal<string> TokenKey { get; } = new AsyncLocal<string>();
 
 
         //public static AsyncLocal<DtoUserInfo> UserInfo { get; } = new AsyncLocal<DtoUserInfo>();
